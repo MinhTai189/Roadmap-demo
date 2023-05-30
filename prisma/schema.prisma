@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator nestjs_dto_generator {
+  provider             = "prisma-nestjs-dto-generator"
+  output               = "../src/generated"
+  enableModel          = false // default: true
+  modelFileNameSuffix  = ".model" // default: ".model"
+  modelClassNameSuffix = "Model" // default: ""
+  enableSwagger        = false // default: false
+  dtoClassNameSuffix   = "Dto" // default: "Dto"
+  dtoFileNameSuffix    = ".dto" // default: ".dto"
+  toLowerCase          = false // field name to lower case, default: false
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  firstName String?  @db.VarChar(50)
+  lastName  String?  @db.VarChar(50)
+  topic     Topic[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Vocabulary {
+  id            Int              @id @default(autoincrement())
+  name          String           @db.VarChar(100)
+  ipa           String           @db.VarChar(200)
+  types         VocabularyType[]
+  examples      Json
+  imageUrl      String
+  audioUrl      String
+  rememberCount Int              @default(0)
+  Meaning       String           @db.VarChar(200)
+  topicId       Int?
+  topic         Topic?           @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  // relationVocabularies 
+  // irregular Vocabulary
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+}
+
+model Topic {
+  id           Int          @id @default(autoincrement())
+  name         String       @db.VarChar(100)
+  icon         String
+  background   String
+  vocabularies Vocabulary[]
+  userId       Int?
+  user         User?        @relation(fields: [userId], references: [id])
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+enum VocabularyType {
+  verb
+  noun
+  adjective
+  adverb
+}
