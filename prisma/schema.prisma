@@ -30,6 +30,7 @@ model User {
   topic     Topic[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  Box       Box[]
 }
 
 model Vocabulary {
@@ -37,29 +38,48 @@ model Vocabulary {
   name          String           @db.VarChar(100)
   ipa           String           @db.VarChar(200)
   types         VocabularyType[]
-  examples      Json
-  imageUrl      String
-  audioUrl      String
+  examples      Json?
+  imageUrl      String?
+  audioUrl      String?
   rememberCount Int              @default(0)
-  Meaning       String           @db.VarChar(200)
+  meaning       String           @db.VarChar(200)
   topicId       Int?
   topic         Topic?           @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  boxId         Int?
+  box           Box?             @relation(fields: [boxId], references: [id])
   // relationVocabularies 
   // irregular Vocabulary
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
+  reviewedAt    DateTime?
 }
 
 model Topic {
   id           Int          @id @default(autoincrement())
   name         String       @db.VarChar(100)
-  icon         String
   background   String
   vocabularies Vocabulary[]
   userId       Int?
   user         User?        @relation(fields: [userId], references: [id])
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
+
+  @@unique([name, userId])
+}
+
+model Box {
+  id           Int          @id @default(autoincrement())
+  name         String
+  description  String
+  level        Int
+  userId       Int
+  user         User?        @relation(fields: [userId], references: [id])
+  vocabularies Vocabulary[]
+  timeline     Int
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@unique([level, userId])
 }
 
 enum VocabularyType {
@@ -67,4 +87,6 @@ enum VocabularyType {
   noun
   adjective
   adverb
+  preposition
+  compound_word
 }

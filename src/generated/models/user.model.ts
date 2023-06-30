@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { IsNumber, IsNotEmpty, IsString, IsOptional, IsDate } from "class-validator";
-import { TopicModel } from "./";
+import { TopicModel, BoxModel } from "./";
 
 export class UserModel {
     @IsNotEmpty()
@@ -29,4 +29,7 @@ export class UserModel {
     @IsNotEmpty()
     @IsDate()
     updatedAt: Date;
+
+    @IsOptional()
+    Box: BoxModel[];
 }

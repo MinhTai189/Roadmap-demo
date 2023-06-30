@@ -7,6 +7,8 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
+  Param,
 } from '@nestjs/common';
 import {
   ApiBody,
@@ -15,32 +17,25 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
+import { User } from 'src/common/decorators/user.decorator';
+import { OneResourceDto } from 'src/common/dtos/one-resource.dto';
+import { TransformBodyPipe } from 'src/common/pipes/transform-body.pipe';
+import { Models } from 'src/enums/models.enum';
 import { VocabularyDto } from 'src/generated/dtos';
-import { ListVocabularyDto } from './dto/list-vocabulary.dto';
+import { JWTGuard } from '../auth/strategies/jwt.strategy';
 import {
   CreateVocabularyDto,
   UpdateVocabularyDto,
 } from './dto/vocabulary-crud.dto';
 import { VocabularyService } from './vocabulary.service';
+import { ListVocabularyDto } from './dto/list-vocabulary.dto';
 import { ListResourcePayloadDto } from 'src/common/dtos/list-resource.dto';
-import { TransformBodyPipe } from 'src/common/pipes/transform-body.pipe';
-import { Models } from 'src/enums/models.enum';
-import { OneResourceDto } from 'src/common/dtos/one-resource.dto';
+import { ConvertedQuery } from 'src/common/decorators/query.decorator';
 
 @ApiTags('Vocabulary')
 @Controller('vocabularies')
 export class VocabularyController {
   constructor(private readonly vocabularyService: VocabularyService) {}
-
-  @Get()
-  @ApiOperation({ summary: 'Get List of Vocabulary' })
-  @ApiCreatedResponse({
-    description: 'List of vocabulary have been returned successfully',
-    type: ListVocabularyDto,
-  })
-  get(@Query() listRequestDto: ListResourcePayloadDto) {
-    return this.vocabularyService.getAll(listRequestDto);
-  }
 
   @Post()
   @ApiOperation({ summary: 'Create New Vocabulary' })
@@ -52,11 +47,13 @@ export class VocabularyController {
     type: CreateVocabularyDto,
     description: 'Create New Vocabulary Payload',
   })
+  @UseGuards(JWTGuard)
   create(
     @Body(TransformBodyPipe(Models.Vocabulary))
     createVocabularyDto: CreateVocabularyDto,
+    @User('id') userId: number,
   ) {
-    return this.vocabularyService.create(createVocabularyDto);
+    return this.vocabularyService.createVocabulary(createVocabularyDto, userId);
   }
 
   @Get(':id')
@@ -65,8 +62,9 @@ export class VocabularyController {
     description: 'The vocabulary have been returned successfully',
     type: VocabularyDto,
   })
+  @UseGuards(JWTGuard)
   getOne(@Query() query: OneResourceDto) {
-    return this.vocabularyService.findOne(query.id, {
+    return this.vocabularyService.findOne(+query.id, {
       select: query.select,
       include: query.include,
       where: query.where,
@@ -84,8 +82,9 @@ export class VocabularyController {
     type: 'string',
     name: 'id',
   })
+  @UseGuards(JWTGuard)
   update(
-    @Query('id', ParseIntPipe) id: number,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateVocabularyDto: UpdateVocabularyDto,
   ) {
     return this.vocabularyService.update(id, updateVocabularyDto);
@@ -102,7 +101,39 @@ export class VocabularyController {
     type: 'string',
     name: 'id',
   })
-  delete(@Query('id', ParseIntPipe) id: number) {
+  @UseGuards(JWTGuard)
+  delete(@Param('id', ParseIntPipe) id: number) {
     return this.vocabularyService.delete(id);
+  }
+
+  @Get('belong-topic/:topicId')
+  @ApiOperation({ summary: 'Get List of Vocabularies by a topic' })
+  @ApiCreatedResponse({
+    description: 'List of vocabularies have been returned successfully',
+    type: ListVocabularyDto,
+  })
+  @UseGuards(JWTGuard)
+  getByTopic(
+    @Param('topicId', ParseIntPipe) topicId: number,
+    @ConvertedQuery() listRequestDto: ListResourcePayloadDto,
+  ) {
+    return this.vocabularyService.getVocabulariesByTopic(
+      listRequestDto,
+      topicId,
+    );
+  }
+
+  @Get('belong-box/:boxId')
+  @ApiOperation({ summary: 'Get List of Vocabularies by a box' })
+  @ApiCreatedResponse({
+    description: 'List of vocabularies have been returned successfully',
+    type: ListVocabularyDto,
+  })
+  @UseGuards(JWTGuard)
+  getByBox(
+    @Param('boxId', ParseIntPipe) boxId: number,
+    @ConvertedQuery() listRequestDto: ListResourcePayloadDto,
+  ) {
+    return this.vocabularyService.getVocabulariesByBox(listRequestDto, boxId);
   }
 }

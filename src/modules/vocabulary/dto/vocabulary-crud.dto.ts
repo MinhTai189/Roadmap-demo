@@ -9,6 +9,8 @@ export class CreateVocabularyDto extends OmitType(VocabularyDto, [
   'createdAt',
   'updatedAt',
   'topic',
+  'boxId',
+  'box',
 ]) {
   @ApiProperty({ required: true, type: 'number' })
   @IsNotEmpty()

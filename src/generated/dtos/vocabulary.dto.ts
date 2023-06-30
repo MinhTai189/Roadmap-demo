@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNumber, IsNotEmpty, IsString, IsEnum, IsOptional, IsDate } from "class-validator";
-import { TopicDto } from "./";
+import { TopicDto, BoxDto } from "./";
 import { VocabularyType } from "../enums";
 
 export class VocabularyDto {
@@ -25,19 +25,19 @@ export class VocabularyDto {
     @IsEnum(VocabularyType)
     types: VocabularyType[];
 
-    @ApiProperty({ required: true })
-    @IsNotEmpty()
-    examples: Prisma.JsonValue;
+    @ApiProperty({ required: false })
+    @IsOptional()
+    examples?: Prisma.JsonValue;
 
-    @ApiProperty({ required: true })
-    @IsNotEmpty()
+    @ApiProperty({ required: false })
+    @IsOptional()
     @IsString()
-    imageUrl: string;
+    imageUrl?: string;
 
-    @ApiProperty({ required: true })
-    @IsNotEmpty()
+    @ApiProperty({ required: false })
+    @IsOptional()
     @IsString()
-    audioUrl: string;
+    audioUrl?: string;
 
     @ApiProperty({ required: true })
     @IsNotEmpty()
@@ -47,7 +47,7 @@ export class VocabularyDto {
     @ApiProperty({ required: true })
     @IsNotEmpty()
     @IsString()
-    Meaning: string;
+    meaning: string;
 
     @ApiProperty({ required: false })
     @IsOptional()
@@ -58,6 +58,15 @@ export class VocabularyDto {
     @IsOptional()
     topic?: TopicDto;
 
+    @ApiProperty({ required: false })
+    @IsOptional()
+    @IsNumber()
+    boxId?: number;
+
+    @ApiProperty({ required: false, type: () => BoxDto })
+    @IsOptional()
+    box?: BoxDto;
+
     @ApiProperty({ required: true })
     @IsNotEmpty()
     @IsDate()
@@ -67,4 +76,9 @@ export class VocabularyDto {
     @IsNotEmpty()
     @IsDate()
     updatedAt: Date;
+
+    @ApiProperty({ required: false })
+    @IsOptional()
+    @IsDate()
+    reviewedAt?: Date;
 }

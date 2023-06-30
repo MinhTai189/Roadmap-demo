@@ -1,0 +1,1 @@
+export const GG_OAUTH_2_CLIENT = 'GG_OAUTH_2_CLIENT';

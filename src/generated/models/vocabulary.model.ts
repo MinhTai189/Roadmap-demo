@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { IsNumber, IsNotEmpty, IsString, IsEnum, IsOptional, IsDate } from "class-validator";
-import { TopicModel } from "./";
+import { TopicModel, BoxModel } from "./";
 import { VocabularyType } from "../enums";
 
 export class VocabularyModel {
@@ -20,16 +20,16 @@ export class VocabularyModel {
     @IsEnum(VocabularyType)
     types: VocabularyType[];
 
-    @IsNotEmpty()
-    examples: Prisma.JsonValue;
+    @IsOptional()
+    examples?: Prisma.JsonValue;
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsString()
-    imageUrl: string;
+    imageUrl?: string;
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsString()
-    audioUrl: string;
+    audioUrl?: string;
 
     @IsNotEmpty()
     @IsNumber()
@@ -37,7 +37,7 @@ export class VocabularyModel {
 
     @IsNotEmpty()
     @IsString()
-    Meaning: string;
+    meaning: string;
 
     @IsOptional()
     @IsNumber()
@@ -46,6 +46,13 @@ export class VocabularyModel {
     @IsOptional()
     topic?: TopicModel;
 
+    @IsOptional()
+    @IsNumber()
+    boxId?: number;
+
+    @IsOptional()
+    box?: BoxModel;
+
     @IsNotEmpty()
     @IsDate()
     createdAt: Date;
@@ -53,4 +60,8 @@ export class VocabularyModel {
     @IsNotEmpty()
     @IsDate()
     updatedAt: Date;
+
+    @IsOptional()
+    @IsDate()
+    reviewedAt?: Date;
 }

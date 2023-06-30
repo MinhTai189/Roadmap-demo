@@ -1,3 +1,4 @@
+import { isNumber } from 'class-validator';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import {
   ListResourcePayloadDto,
@@ -11,25 +12,32 @@ export class CrudService {
     this.modelName = modelName;
   }
 
-  async getAll(
+  async getAll<T>(
     listPayload: ListResourcePayloadDto,
-  ): Promise<ListResourceResponseDto> {
+    userId?: number,
+  ): Promise<ListResourceResponseDto<T>> {
     let pagination = {
       page: listPayload.page,
       size: listPayload.size,
     };
+    const where = listPayload.where ?? {};
     const count = await this.prismaService[this.modelName].count();
 
     if (!pagination.page || pagination.size) {
       pagination = { page: 1, size: count };
     }
 
+    if (userId) {
+      where.userId = userId;
+    }
+
     const query = {
       skip: (pagination.page - 1) * pagination.size,
       take: +pagination.size,
-      where: listPayload.where,
+      where,
       select: listPayload.select,
       include: listPayload.include,
+      orderBy: listPayload.orderBy,
     };
 
     const foundRecords = await this.prismaService[this.modelName].findMany(
@@ -52,12 +60,16 @@ export class CrudService {
     return createdRecord;
   }
 
-  async findOne(id: number | string, options, uniqueKey = 'id') {
+  async findOne(where, options = {}) {
+    if (isNumber(where)) {
+      where = {
+        id: where,
+      };
+    }
+
     const foundRecord = await this.prismaService[this.modelName].findUnique({
-      where: {
-        [uniqueKey]: +id,
-      },
       ...options,
+      where,
     });
 
     return foundRecord;

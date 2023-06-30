@@ -13,10 +13,6 @@ export class TopicModel {
 
     @IsNotEmpty()
     @IsString()
-    icon: string;
-
-    @IsNotEmpty()
-    @IsString()
     background: string;
 
     @IsOptional()

@@ -17,11 +17,6 @@ export class TopicDto {
     @ApiProperty({ required: true })
     @IsNotEmpty()
     @IsString()
-    icon: string;
-
-    @ApiProperty({ required: true })
-    @IsNotEmpty()
-    @IsString()
     background: string;
 
     @ApiProperty({ required: true, type: () => VocabularyDto })

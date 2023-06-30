@@ -1,12 +1,14 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   ParseIntPipe,
   Patch,
   Post,
   Query,
-  Delete,
+  UseGuards,
+  Param,
 } from '@nestjs/common';
 import {
   ApiBody,
@@ -15,14 +17,17 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
+import { ListResourcePayloadDto } from 'src/common/dtos/list-resource.dto';
+import { OneResourceDto } from 'src/common/dtos/one-resource.dto';
+import { TransformBodyPipe } from 'src/common/pipes/transform-body.pipe';
+import { Models } from 'src/enums/models.enum';
 import { TopicDto } from 'src/generated/dtos';
+import { JWTGuard } from '../auth/strategies/jwt.strategy';
 import { ListTopicDto } from './dto/list-topic.dto';
 import { CreateTopicDto, UpdateTopicDto } from './dto/topic-crud.dto';
 import { TopicService } from './topic.service';
-import { Models } from 'src/enums/models.enum';
-import { ListResourcePayloadDto } from 'src/common/dtos/list-resource.dto';
-import { TransformBodyPipe } from 'src/common/pipes/transform-body.pipe';
-import { OneResourceDto } from 'src/common/dtos/one-resource.dto';
+import { User } from 'src/common/decorators/user.decorator';
+import { ConvertedQuery } from 'src/common/decorators/query.decorator';
 
 @ApiTags('Topic')
 @Controller('topics')
@@ -35,8 +40,12 @@ export class TopicController {
     description: 'List of topic have been returned successfully',
     type: ListTopicDto,
   })
-  get(@Query() listRequestDto: ListResourcePayloadDto) {
-    return this.topicService.getAll(listRequestDto);
+  @UseGuards(JWTGuard)
+  get(
+    @ConvertedQuery() listRequestDto: ListResourcePayloadDto,
+    @User('id') userId: number,
+  ) {
+    return this.topicService.getAll(listRequestDto, userId);
   }
 
   @Post()
@@ -46,8 +55,9 @@ export class TopicController {
     type: TopicDto,
   })
   @ApiBody({ type: CreateTopicDto, description: 'Create New Topic Payload' })
-  create(@Body() createTopicDto: CreateTopicDto) {
-    return this.topicService.create(createTopicDto);
+  @UseGuards(JWTGuard)
+  create(@Body() createTopicDto: CreateTopicDto, @User('id') userId: number) {
+    return this.topicService.create({ ...createTopicDto, userId });
   }
 
   @Get(':id')
@@ -56,8 +66,9 @@ export class TopicController {
     description: 'The topic have been returned successfully',
     type: TopicDto,
   })
+  @UseGuards(JWTGuard)
   getOne(@Query() query: OneResourceDto) {
-    return this.topicService.findOne(query.id, {
+    return this.topicService.findOne(+query.id, {
       select: query.select,
       include: query.include,
       where: query.where,
@@ -75,8 +86,9 @@ export class TopicController {
     type: 'string',
     name: 'id',
   })
+  @UseGuards(JWTGuard)
   update(
-    @Query('id', ParseIntPipe) id: number,
+    @Param('id', ParseIntPipe) id: number,
     @Body(TransformBodyPipe(Models.Topic)) updateTopicDto: UpdateTopicDto,
   ) {
     return this.topicService.update(id, updateTopicDto);
@@ -90,10 +102,11 @@ export class TopicController {
   })
   @ApiQuery({
     required: true,
-    type: 'string',
+    type: 'number',
     name: 'id',
   })
-  delete(@Query('id', ParseIntPipe) id: number) {
+  @UseGuards(JWTGuard)
+  delete(@Param('id', ParseIntPipe) id: number) {
     return this.topicService.delete(id);
   }
 }

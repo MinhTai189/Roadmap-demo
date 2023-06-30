@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNumber, IsNotEmpty, IsString, IsOptional, IsDate } from "class-validator";
-import { TopicDto } from "./";
+import { TopicDto, BoxDto } from "./";
 
 export class UserDto {
     @ApiProperty({ required: true })
@@ -37,4 +37,8 @@ export class UserDto {
     @IsNotEmpty()
     @IsDate()
     updatedAt: Date;
+
+    @ApiProperty({ required: true, type: () => BoxDto })
+    @IsOptional()
+    Box: BoxDto[];
 }
